@@ -2,6 +2,21 @@
 
 @section('title', 'Dashboard Administrator')
 @section('content')
+
+@php
+    // Default values jika $stats tidak ada
+    $stats = $stats ?? [
+        'anggota_count' => 0,
+        'buku_count' => 0,
+        'kategori_count' => 0,
+        'penerbit_count' => 0,
+        'peminjaman_aktif_count' => 0,
+        'pengembalian_count' => 0
+    ];
+    
+    $recentLoans = $recentLoans ?? collect([]);
+@endphp
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
@@ -89,10 +104,10 @@
                                 <tbody>
                                     @foreach($recentLoans as $loan)
                                     <tr>
-                                        <td>{{ $loan->user->fullname }}</td>
-                                        <td>{{ $loan->buku->judul }}</td>
-                                        <td>{{ $loan->tanggal_pinjam }}</td>
-                                        <td><span class="badge bg-{{ $loan->status == 'Dipinjam' ? 'warning' : 'success' }}">{{ $loan->status }}</span></td>
+                                        <td>{{ $loan->user->fullname ?? 'N/A' }}</td>
+                                        <td>{{ $loan->buku->judul ?? 'N/A' }}</td>
+                                        <td>{{ $loan->tanggal_pinjam ?? 'N/A' }}</td>
+                                        <td><span class="badge bg-{{ ($loan->status ?? '') == 'Dipinjam' ? 'warning' : 'success' }}">{{ $loan->status ?? 'N/A' }}</span></td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -116,25 +131,25 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 text-center">
-                            <a href="{{ route('admin.users.index') }}" class="btn btn-outline-primary btn-lg w-100 mb-2">
+                            <a href="#" class="btn btn-outline-primary btn-lg w-100 mb-2">
                                 <i class="fas fa-users fa-2x"></i><br>
                                 Kelola Anggota
                             </a>
                         </div>
                         <div class="col-md-3 text-center">
-                            <a href="{{ route('admin.books.index') }}" class="btn btn-outline-success btn-lg w-100 mb-2">
+                            <a href="#" class="btn btn-outline-success btn-lg w-100 mb-2">
                                 <i class="fas fa-book fa-2x"></i><br>
                                 Kelola Buku
                             </a>
                         </div>
                         <div class="col-md-3 text-center">
-                            <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-info btn-lg w-100 mb-2">
+                            <a href="#" class="btn btn-outline-info btn-lg w-100 mb-2">
                                 <i class="fas fa-tags fa-2x"></i><br>
                                 Kelola Kategori
                             </a>
                         </div>
                         <div class="col-md-3 text-center">
-                            <a href="{{ route('admin.loans.index') }}" class="btn btn-outline-warning btn-lg w-100 mb-2">
+                            <a href="#" class="btn btn-outline-warning btn-lg w-100 mb-2">
                                 <i class="fas fa-exchange-alt fa-2x"></i><br>
                                 Kelola Peminjaman
                             </a>

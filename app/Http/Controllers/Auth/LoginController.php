@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Models\User; // Tambahkan ini
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -20,31 +22,63 @@ class LoginController extends Controller
     /**
      * Handle a login request.
      */
-    public function login(Request $request)
-    {
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
+   public function login(Request $request)
+{
+    $request->validate([
+        'username' => 'required|string',
+        'password' => 'required|string',
+    ]);
 
-        if (Auth::attempt(['username' => $request->username, 'password' => $request->password], $request->remember)) {
-            $request->session()->regenerate();
-            
-            // Redirect berdasarkan role
-            $user = Auth::user();
-            
-            if (in_array($user->role, ['admin', 'petugas'])) {
-                return redirect()->intended('/admin/dashboard');
-            } else {
-                return redirect()->intended('/user/dashboard');
-            }
-        }
+    // Debug: Log input values
+    Log::info('Login attempt:', [
+        'username' => $request->username,
+        'password' => $request->password,
+        'remember' => $request->remember
+    ]);
 
-        throw ValidationException::withMessages([
-            'username' => 'Username atau password salah.',
-        ]);
+    // Coba login dengan username
+    if (Auth::attempt(['username' => $request->username, 'password' => $request->password], $request->remember)) {
+        Log::info('Login success with username: ' . $request->username);
+        return $this->authenticated($request);
     }
 
+    // Coba login dengan email
+    if (Auth::attempt(['email' => $request->username, 'password' => $request->password], $request->remember)) {
+        Log::info('Login success with email: ' . $request->username);
+        return $this->authenticated($request);
+    }
+
+    // Debug: Check if user exists
+    $userExists = \App\Models\User::where('username', $request->username)
+                 ->orWhere('email', $request->username)
+                 ->exists();
+                 
+Log::info('User exists check: ' . ($userExists ? 'YES' : 'NO'));
+
+    throw ValidationException::withMessages([
+        'username' => 'Username atau password salah.',
+    ]);
+}
+    /**
+     * Handle successful authentication.
+     */
+   protected function authenticated(Request $request)
+{
+    $request->session()->regenerate();
+    
+    $user = Auth::user();
+    
+    // Update last login
+    $user->update(['terakhir_login' => now()]);
+    
+    Log::info('User logged in: ' . $user->username . ', Role: ' . $user->role);
+    
+    if (in_array($user->role, ['admin', 'petugas'])) {
+        return redirect()->intended('/admin/dashboard');
+    } else {
+        return redirect()->intended('/user/dashboard');
+    }
+}
     /**
      * Show the registration form.
      */
@@ -58,9 +92,38 @@ class LoginController extends Controller
      */
     public function register(Request $request)
     {
-        // Jika ingin implementasi registrasi, tambahkan di sini
-        // Untuk sementara redirect ke login
-        return redirect('/login')->with('info', 'Registrasi belum tersedia.');
+        $request->validate([
+            'nis' => 'required|string|max:20|unique:users,nis',
+            'fullname' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+            'kelas' => 'required|string|max:50',
+            'alamat' => 'required|string',
+        ]);
+
+        try {
+            // Create new user
+            $user = User::create([
+                'nis' => $request->nis,
+                'fullname' => $request->fullname,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'kelas' => $request->kelas,
+                'alamat' => $request->alamat,
+                'role' => 'anggota', // Default role untuk registrasi
+                'status' => 'active',
+            ]);
+
+            // Auto login setelah registrasi
+            Auth::login($user);
+
+            return redirect('/user/dashboard')->with('success', 'Registrasi berhasil! Selamat datang.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.')->withInput();
+        }
     }
 
     /**
@@ -72,6 +135,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/login');
+        return redirect('/login')->with('status', 'Anda telah logout.');
     }
 }

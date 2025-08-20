@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\UserDashboardController;
 
 // Debug routes
 Route::get('/debug-role', function () {
@@ -23,12 +22,12 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-// Authentication Routes - PASTIKAN NAMA CONTROLLER BENAR
+// Authentication Routes
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// ✅ Route register (opsional)
+// Route register
 Route::get('/register', [LoginController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [LoginController::class, 'register']);
 
@@ -49,33 +48,53 @@ Route::middleware(['auth'])->group(function () {
         return 'Auth berhasil! Role: ' . auth()->user()->role;
     });
 
-    // Admin routes
+    // ✅ ADMIN ROUTES
     Route::middleware(['role:admin,petugas'])->group(function () {
         Route::get('/admin/dashboard', function () {
-            return 'Dashboard Admin - Role: ' . auth()->user()->role;
+            // Ambil data stats
+            $stats = [
+                'anggota_count' => \App\Models\User::where('role', 'anggota')->count(),
+                'buku_count' => \App\Models\Buku::count(),
+                'kategori_count' => \App\Models\Kategori::count(),
+                'penerbit_count' => \App\Models\Penerbit::count(),
+                'peminjaman_aktif_count' => \App\Models\Peminjaman::where('status', 'Dipinjam')->count(),
+                'pengembalian_count' => \App\Models\Peminjaman::where('status', 'Dikembalikan')->count(),
+            ];
+
+            // Ambil data peminjaman terbaru
+            $recentLoans = \App\Models\Peminjaman::with(['user', 'buku'])
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
+
+            return view('admin.dashboard', compact('stats', 'recentLoans'));
         })->name('admin.dashboard');
+        
+        // Tambahkan routes admin lainnya di sini nanti
+        // Route::get('/admin/anggota', ...);
+        // Route::get('/admin/buku', ...);
     });
-    
-    // User routes
+
+    // ✅ USER ROUTES  
     Route::middleware(['role:anggota'])->group(function () {
         Route::get('/user/dashboard', function () {
-            return 'Dashboard User - Role: ' . auth()->user()->role;
+            return view('user.dashboard');
         })->name('user.dashboard');
         
         Route::get('/user/peminjaman', function () {
-            return 'Peminjaman User';
+            return view('user.peminjaman');
         })->name('user.peminjaman');
         
         Route::get('/user/pengembalian', function () {
-            return 'Pengembalian User';
+            return view('user.pengembalian');
         })->name('user.pengembalian');
         
         Route::get('/user/buku', function () {
-            return 'Daftar Buku';
+            return view('user.buku');
         })->name('user.buku');
         
         Route::get('/user/profil', function () {
-            return 'Profil User';
+            return view('user.profil');
         })->name('user.profil');
     });
 });
