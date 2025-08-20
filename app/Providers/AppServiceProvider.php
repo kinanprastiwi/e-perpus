@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Manual register controller jika perlu
+        $this->app->bind('PetugasDashboard', function() {
+            return new \App\Http\Controllers\Petugas\PetugasDashboardController();
+        });
     }
 
     /**
@@ -19,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Manual register middleware
+        $this->app['router']->aliasMiddleware('role', \App\Http\Middleware\CheckRole::class);
+        
+        // Tambahan konfigurasi lainnya jika perlu
     }
 }

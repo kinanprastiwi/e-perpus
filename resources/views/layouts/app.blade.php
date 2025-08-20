@@ -10,13 +10,21 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/dashboard">E-Perpus</a>
+            <a class="navbar-brand" href="{{ url('/') }}">E-Perpus</a>
+            
+            @auth
             <div class="navbar-nav ms-auto">
-                <form action="/logout" method="POST">
+                <span class="navbar-text me-3">
+                    Selamat datang, {{ Auth::user()->fullname }}
+                </span>
+                <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="btn btn-outline-light">Logout</button>
+                    <button type="submit" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
                 </form>
             </div>
+            @endauth
         </div>
     </nav>
 

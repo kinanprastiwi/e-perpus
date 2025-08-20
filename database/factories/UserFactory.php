@@ -12,11 +12,6 @@ use Illuminate\Support\Str;
 class UserFactory extends Factory
 {
     /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -24,21 +19,19 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'kode_user' => 'AD' . Str::padLeft($this->faker->unique()->numberBetween(1, 100), 3, '0'),
+            'nis' => $this->faker->optional()->numerify('########'),
+            'fullname' => $this->faker->name(),
+            'username' => $this->faker->unique()->userName(),
+            'password' => Hash::make('password'),
+            'kelas' => $this->faker->optional()->randomElement(['X IPA 1', 'X IPA 2', 'XII IPS 1']),
+            'alamat' => $this->faker->address(),
+            'verif' => $this->faker->randomElement(['Terverifikasi', 'Belum Terverifikasi']),
+            'role' => $this->faker->randomElement(['admin', 'user']),
+            'join_date' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
-
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
-    }
 }
+

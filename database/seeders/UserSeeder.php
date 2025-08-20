@@ -2,72 +2,83 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class UserSeeder extends Seeder
 {
     public function run()
     {
-        // Admin
-        User::create([
-            'kode_user' => 'AD001',
-            'nis' => null,
-            'fullname' => 'Administrator Utama',
-            'username' => 'admin',
-            'password' => Hash::make('password'),
-            'kelas' => null,
-            'alamat' => 'Kantor Perpustakaan',
-            'verif' => 'Terverifikasi',
-            'role' => 'admin',
-            'join_date' => now(),
-        ]);
-
-        // Petugas
-        User::create([
-            'kode_user' => 'PT001',
-            'nis' => null,
-            'fullname' => 'Petugas Perpustakaan',
-            'username' => 'petugas',
-            'password' => Hash::make('password'),
-            'kelas' => null,
-            'alamat' => 'Kantor Perpustakaan',
-            'verif' => 'Terverifikasi',
-            'role' => 'petugas',
-            'join_date' => now(),
-        ]);
-
-        // Anggota
-        $anggotas = [
+        $now = Carbon::now();
+        
+        DB::table('users')->insert([
             [
-                'kode_user' => 'AG001',
-                'nis' => '123',
-                'fullname' => 'Gunokian',
-                'username' => 'gunokian',
-                'password' => Hash::make('password'),
-                'kelas' => 'X - Administrasi Perkantoran',
-                'alamat' => 'Bandung',
+                'kode_user' => 'ADM001',
+                'nis' => null,
+                'fullname' => 'Administrator Utama',
+                'username' => 'admin',
+                'email' => 'admin@perpustakaan.com',
+                'password' => Hash::make('password123'),
+                'kelas' => null,
+                'alamat' => 'Jl. Administrasi No. 1',
                 'verif' => 'Terverifikasi',
-                'role' => 'anggota',
-                'join_date' => now()->subMonths(3),
+                'role' => 'admin',
+                'join_date' => $now->toDateString(), // Tambahkan ini
+                'terakhir_login' => null,
+                'created_at' => $now,
+                'updated_at' => $now
             ],
             [
-                'kode_user' => 'AG002',
-                'nis' => '123456',
-                'fullname' => 'Muh. Nurrohman',
-                'username' => 'nurrohman',
-                'password' => Hash::make('password'),
-                'kelas' => 'X - Rekayasa Perangkat Lunak',
-                'alamat' => 'Jl. Nusantara Plaza',
+                'kode_user' => 'PTG001',
+                'nis' => null,
+                'fullname' => 'Petugas Perpustakaan',
+                'username' => 'petugas',
+                'email' => 'petugas@perpustakaan.com',
+                'password' => Hash::make('password123'),
+                'kelas' => null,
+                'alamat' => 'Jl. Petugas No. 1',
+                'verif' => 'Terverifikasi',
+                'role' => 'petugas',
+                'join_date' => $now->toDateString(), // Tambahkan ini
+                'terakhir_login' => null,
+                'created_at' => $now,
+                'updated_at' => $now
+            ],
+            [
+                'kode_user' => 'AGT001',
+                'nis' => '2024001',
+                'fullname' => 'Anggota Contoh',
+                'username' => 'anggota',
+                'email' => 'anggota@email.com',
+                'password' => Hash::make('password123'),
+                'kelas' => 'XII IPA 1',
+                'alamat' => 'Jl. Anggota No. 1',
                 'verif' => 'Terverifikasi',
                 'role' => 'anggota',
-                'join_date' => now()->subMonths(2),
-            ]
-        ];
-
-        foreach ($anggotas as $anggota) {
-            User::create($anggota);
-        }
+                'join_date' => $now->toDateString(), // Tambahkan ini
+                'terakhir_login' => null,
+                'created_at' => $now,
+                'updated_at' => $now
+            ],
+            [
+    'kode_user' => 'ADM001',
+    'nis' => null,
+    'fullname' => 'Administrator Utama',
+    'username' => 'admin',
+    'email' => 'admin@perpustakaan.com',
+    'password' => Hash::make('password123'),
+    'kelas' => null,
+    'alamat' => 'Jl. Administrasi No. 1',
+    'verif' => 'Terverifikasi',
+    'role' => 'admin',
+    'join_date' => '2024-01-01', // Tanggal spesifik
+    'terakhir_login' => null,
+    'created_at' => $now,
+    'updated_at' => $now
+]
+        ]);
     }
 }

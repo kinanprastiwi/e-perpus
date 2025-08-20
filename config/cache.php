@@ -3,6 +3,7 @@
 use Illuminate\Support\Str;
 
 return [
+    
 
     /*
     |--------------------------------------------------------------------------
@@ -15,8 +16,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
-
+    'default' => env('CACHE_DRIVER', 'file'), // Pastikan default adalah 'file'
     /*
     |--------------------------------------------------------------------------
     | Cache Stores

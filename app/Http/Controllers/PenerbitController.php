@@ -3,62 +3,60 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Penerbit;
 
 class PenerbitController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $penerbits = Penerbit::all();
+        return view('penerbit.index', compact('penerbits'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('penerbit.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'kode_penerbit' => 'required|unique:penerbits,kode_penerbit',
+            'nama_penerbit' => 'required',
+            'verif_penerbit' => 'required',
+        ]);
+
+        Penerbit::create($request->all());
+
+        return redirect()->route('penerbit.index')->with('success', 'Penerbit berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit($id)
     {
-        //
+        $penerbit = Penerbit::findOrFail($id);
+        return view('penerbit.edit', compact('penerbit'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $penerbit = Penerbit::findOrFail($id);
+        
+        $request->validate([
+            'kode_penerbit' => 'required|unique:penerbits,kode_penerbit,' . $id . ',id_penerbit',
+            'nama_penerbit' => 'required',
+            'verif_penerbit' => 'required',
+        ]);
+
+        $penerbit->update($request->all());
+
+        return redirect()->route('penerbit.index')->with('success', 'Penerbit berhasil diperbarui.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
+        $penerbit = Penerbit::findOrFail($id);
+        $penerbit->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('penerbit.index')->with('success', 'Penerbit berhasil dihapus.');
     }
 }

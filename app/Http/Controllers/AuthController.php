@@ -14,25 +14,31 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'username' => 'required',
-            'password' => 'required'
-        ]);
+{
+    $credentials = $request->validate([
+        'username' => 'required',
+        'password' => 'required'
+    ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            
-            // Update last login
-            Auth::user()->update(['terakhir_login' => now()]);
-            
-            return redirect()->intended('/dashboard');
+    if (Auth::attempt($credentials, $request->remember)) {
+        $request->session()->regenerate();
+        
+        // Update last login
+        Auth::user()->update(['terakhir_login' => now()]);
+        
+        // Redirect berdasarkan role
+        $user = Auth::user();
+        if ($user->role === 'admin' || $user->role === 'petugas') {
+            return redirect()->intended('/admin/dashboard');
+        } else {
+            return redirect()->intended('/user/dashboard');
         }
-
-        return back()->withErrors([
-            'username' => 'Username atau password salah.',
-        ]);
     }
+
+    return back()->withErrors([
+        'username' => 'Username atau password salah.',
+    ]);
+}
 
     public function logout(Request $request)
     {

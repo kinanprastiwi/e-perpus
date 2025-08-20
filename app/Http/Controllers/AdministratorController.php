@@ -3,62 +3,75 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class AdministratorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $admins = User::whereIn('role', ['admin', 'petugas'])->get();
+        return view('administrator.index', compact('admins'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('administrator.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'fullname' => 'required',
+            'username' => 'required|unique:users,username',
+            'password' => 'required|min:6',
+            'role' => 'required|in:admin,petugas',
+        ]);
+
+        $lastAdmin = User::whereIn('role', ['admin', 'petugas'])->orderBy('id_user', 'desc')->first();
+        $prefix = $request->role == 'admin' ? 'AD' : 'PT';
+        $nextId = $lastAdmin ? (int) substr($lastAdmin->kode_user, 2) + 1 : 1;
+        $kode_user = $prefix . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+
+        User::create([
+            'kode_user' => $kode_user,
+            'fullname' => $request->fullname,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'verif' => 'Terverifikasi',
+            'join_date' => now(),
+        ]);
+
+        return redirect()->route('administrator.index')->with('success', 'Administrator berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit($id)
     {
-        //
+        $admin = User::findOrFail($id);
+        return view('administrator.edit', compact('admin'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $admin = User::findOrFail($id);
+        
+        $request->validate([
+            'fullname' => 'required',
+            'username' => 'required|unique:users,username,' . $id . ',id_user',
+            'role' => 'required|in:admin,petugas',
+        ]);
+
+        $admin->update($request->only(['fullname', 'username', 'role']));
+
+        return redirect()->route('administrator.index')->with('success', 'Administrator berhasil diperbarui.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
+        $admin = User::findOrFail($id);
+        $admin->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('administrator.index')->with('success', 'Administrator berhasil dihapus.');
     }
 }
