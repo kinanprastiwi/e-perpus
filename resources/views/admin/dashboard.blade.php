@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard Administrator')
-@section('content')
+@section('page-heading', 'Dashboard Administrator')
 
+@section('content')
 @php
     // Default values jika $stats tidak ada
     $stats = $stats ?? [
@@ -17,143 +18,205 @@
     $recentLoans = $recentLoans ?? collect([]);
 @endphp
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <h2>Dashboard Administrator</h2>
-            <p class="text-muted">Selamat datang, {{ Auth::user()->fullname }}</p>
+<div class="row">
+    <!-- Welcome Message -->
+    <div class="col-md-12 mb-4">
+        <div class="alert alert-primary">
+            <h5 class="alert-heading">Selamat datang, {{ Auth::user()->name ?? Auth::user()->username }}</h5>
+            <p class="mb-0">Anda login sebagai <strong>Administrator Utama</strong></p>
         </div>
     </div>
+</div>
 
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5><i class="fas fa-users"></i> Anggota</h5>
-                    <h3>{{ $stats['anggota_count'] }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5><i class="fas fa-book"></i> Buku</h5>
-                    <h3>{{ $stats['buku_count'] }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h5><i class="fas fa-tags"></i> Kategori</h5>
-                    <h3>{{ $stats['kategori_count'] }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h5><i class="fas fa-building"></i> Penerbit</h5>
-                    <h3>{{ $stats['penerbit_count'] }}</h3>
+<div class="row">
+    <!-- Anggota Card -->
+    <div class="col-xl-2 col-md-4 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Anggota</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['anggota_count'] }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-exchange-alt"></i> Peminjaman Aktif</h5>
-                </div>
-                <div class="card-body">
-                    <h3>{{ $stats['peminjaman_aktif_count'] }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-undo"></i> Pengembalian</h5>
-                </div>
-                <div class="card-body">
-                    <h3>{{ $stats['pengembalian_count'] }}</h3>
+    <!-- Buku Card -->
+    <div class="col-xl-2 col-md-4 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Buku</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['buku_count'] }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-book fa-2x text-gray-300"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-history"></i> Peminjaman Terbaru</h5>
-                </div>
-                <div class="card-body">
-                    @if($recentLoans->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Anggota</th>
-                                        <th>Buku</th>
-                                        <th>Tanggal Pinjam</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($recentLoans as $loan)
-                                    <tr>
-                                        <td>{{ $loan->user->fullname ?? 'N/A' }}</td>
-                                        <td>{{ $loan->buku->judul ?? 'N/A' }}</td>
-                                        <td>{{ $loan->tanggal_pinjam ?? 'N/A' }}</td>
-                                        <td><span class="badge bg-{{ ($loan->status ?? '') == 'Dipinjam' ? 'warning' : 'success' }}">{{ $loan->status ?? 'N/A' }}</span></td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <p class="text-muted">Belum ada data peminjaman.</p>
-                    @endif
+    <!-- Kategori Card -->
+    <div class="col-xl-2 col-md-4 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Kategori</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['kategori_count'] }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tags fa-2x text-gray-300"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Menu Admin --}}
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-cog"></i> Menu Administrator</h5>
+    <!-- Penerbit Card -->
+    <div class="col-xl-2 col-md-4 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Penerbit</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['penerbit_count'] }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-building fa-2x text-gray-300"></i>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 text-center">
-                            <a href="#" class="btn btn-outline-primary btn-lg w-100 mb-2">
-                                <i class="fas fa-users fa-2x"></i><br>
-                                Kelola Anggota
-                            </a>
-                        </div>
-                        <div class="col-md-3 text-center">
-                            <a href="#" class="btn btn-outline-success btn-lg w-100 mb-2">
-                                <i class="fas fa-book fa-2x"></i><br>
-                                Kelola Buku
-                            </a>
-                        </div>
-                        <div class="col-md-3 text-center">
-                            <a href="#" class="btn btn-outline-info btn-lg w-100 mb-2">
-                                <i class="fas fa-tags fa-2x"></i><br>
-                                Kelola Kategori
-                            </a>
-                        </div>
-                        <div class="col-md-3 text-center">
-                            <a href="#" class="btn btn-outline-warning btn-lg w-100 mb-2">
-                                <i class="fas fa-exchange-alt fa-2x"></i><br>
-                                Kelola Peminjaman
-                            </a>
-                        </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Peminjaman Aktif Card -->
+    <div class="col-xl-2 col-md-4 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Peminjaman Aktif</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['peminjaman_aktif_count'] }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pengembalian Card -->
+    <div class="col-xl-2 col-md-4 mb-4">
+        <div class="card border-left-dark shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">
+                            Pengembalian</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pengembalian_count'] }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-undo fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Peminjaman Terbaru -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Peminjaman Terbaru</h6>
+            </div>
+            <div class="card-body">
+                @if($recentLoans->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Anggota</th>
+                                    <th>Buku</th>
+                                    <th>Tanggal Pinjam</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($recentLoans as $loan)
+                                <tr>
+                                    <td>{{ $loan->user->fullname ?? 'N/A' }}</td>
+                                    <td>{{ $loan->buku->judul ?? 'N/A' }}</td>
+                                    <td>{{ $loan->tanggal_pinjam ?? 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ ($loan->status ?? '') == 'Dipinjam' ? 'warning' : 'success' }}">
+                                            {{ $loan->status ?? 'N/A' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-muted text-center py-4">Belum ada data peminjaman.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Administrator -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Menu Administrator</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ route('admin.anggota.index') }}" class="btn btn-outline-primary btn-block">
+                            <i class="fas fa-users fa-2x mb-2"></i><br>
+                            Kelola Anggota
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ route('admin.buku.index') }}" class="btn btn-outline-success btn-block">
+                            <i class="fas fa-book fa-2x mb-2"></i><br>
+                            Kelola Buku
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ route('admin.kategori.index') }}" class="btn btn-outline-info btn-block">
+                            <i class="fas fa-tags fa-2x mb-2"></i><br>
+                            Kelola Kategori
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ route('admin.peminjaman.index') }}" class="btn btn-outline-warning btn-block">
+                            <i class="fas fa-exchange-alt fa-2x mb-2"></i><br>
+                            Kelola Peminjaman
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ route('admin.penerbit.index') }}" class="btn btn-outline-secondary btn-block">
+                            <i class="fas fa-building fa-2x mb-2"></i><br>
+                            Kelola Penerbit
+                        </a>
                     </div>
                 </div>
             </div>

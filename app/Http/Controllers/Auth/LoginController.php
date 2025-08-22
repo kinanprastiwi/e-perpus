@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use App\Models\User; // Tambahkan ini
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
@@ -22,63 +22,68 @@ class LoginController extends Controller
     /**
      * Handle a login request.
      */
-   public function login(Request $request)
-{
-    $request->validate([
-        'username' => 'required|string',
-        'password' => 'required|string',
-    ]);
+    public function login(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    // Debug: Log input values
-    Log::info('Login attempt:', [
-        'username' => $request->username,
-        'password' => $request->password,
-        'remember' => $request->remember
-    ]);
+        // Debug: Log input values
+        Log::info('Login attempt:', [
+            'username' => $request->username,
+            'password' => $request->password,
+            'remember' => $request->remember
+        ]);
 
-    // Coba login dengan username
-    if (Auth::attempt(['username' => $request->username, 'password' => $request->password], $request->remember)) {
-        Log::info('Login success with username: ' . $request->username);
-        return $this->authenticated($request);
+        // Coba login dengan username
+        if (Auth::attempt(['username' => $request->username, 'password' => $request->password], $request->remember)) {
+            Log::info('Login success with username: ' . $request->username);
+            return $this->authenticated($request);
+        }
+
+        // Coba login dengan email
+        if (Auth::attempt(['email' => $request->username, 'password' => $request->password], $request->remember)) {
+            Log::info('Login success with email: ' . $request->username);
+            return $this->authenticated($request);
+        }
+
+        // Debug: Check if user exists
+        $userExists = \App\Models\User::where('username', $request->username)
+                     ->orWhere('email', $request->username)
+                     ->exists();
+                     
+        Log::info('User exists check: ' . ($userExists ? 'YES' : 'NO'));
+
+        throw ValidationException::withMessages([
+            'username' => 'Username atau password salah.',
+        ]);
     }
 
-    // Coba login dengan email
-    if (Auth::attempt(['email' => $request->username, 'password' => $request->password], $request->remember)) {
-        Log::info('Login success with email: ' . $request->username);
-        return $this->authenticated($request);
-    }
-
-    // Debug: Check if user exists
-    $userExists = \App\Models\User::where('username', $request->username)
-                 ->orWhere('email', $request->username)
-                 ->exists();
-                 
-Log::info('User exists check: ' . ($userExists ? 'YES' : 'NO'));
-
-    throw ValidationException::withMessages([
-        'username' => 'Username atau password salah.',
-    ]);
-}
     /**
      * Handle successful authentication.
      */
-   protected function authenticated(Request $request)
-{
-    $request->session()->regenerate();
-    
-    $user = Auth::user();
-    
-    // Update last login
-    $user->update(['terakhir_login' => now()]);
-    
-    Log::info('User logged in: ' . $user->username . ', Role: ' . $user->role);
-    
-    if (in_array($user->role, ['admin', 'petugas'])) {
-        return redirect()->intended('/admin/dashboard');
-    } else {
-        return redirect()->intended('/user/dashboard');
+    protected function authenticated(Request $request)
+    {
+        $request->session()->regenerate();
+        
+        $user = Auth::user();
+        
+        // Update last login
+        $user->update(['terakhir_login' => now()]);
+        
+        // DEBUG: Tambahkan log ini
+        Log::info('Redirecting user: ' . $user->username . ', Role: ' . $user->role);
+        
+        if (in_array($user->role, ['admin', 'petugas'])) {
+            Log::info('Redirecting to admin dashboard');
+            return redirect()->intended('/admin/dashboard');
+        } else {
+            Log::info('Redirecting to user dashboard');
+            return redirect()->intended('/user/dashboard');
+        }
     }
-}
+
     /**
      * Show the registration form.
      */
@@ -112,7 +117,7 @@ Log::info('User exists check: ' . ($userExists ? 'YES' : 'NO'));
                 'password' => bcrypt($request->password),
                 'kelas' => $request->kelas,
                 'alamat' => $request->alamat,
-                'role' => 'anggota', // Default role untuk registrasi
+                'role' => 'anggota',
                 'status' => 'active',
             ]);
 

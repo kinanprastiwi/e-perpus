@@ -22,7 +22,7 @@ class Buku extends Model
         'j_buku_baik',
         'j_buku_rusak',
         'deskripsi',
-        'cover_buku'
+        // 'cover_buku'
     ];
 
     protected $casts = [

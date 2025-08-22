@@ -1,31 +1,54 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace App\Http\Controllers\Auth;
 
-use Closure;
+use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
-class CheckRole
+class RegisterController extends Controller
 {
-    public function handle(Request $request, Closure $next, ...$roles)
+    public function showRegistrationForm()
     {
-        if (!auth()->check()) {
-            return redirect('/login');
-        }
+        return view('auth.register');
+    }
 
-        $userRole = auth()->user()->role;
-        
-        // Handle multiple roles yang dipisah koma
-        $allowedRoles = [];
-        foreach ($roles as $role) {
-            $allowedRoles = array_merge($allowedRoles, explode(',', $role));
-        }
-        $allowedRoles = array_map('trim', $allowedRoles);
+    public function register(Request $request)
+    {
+        $request->validate([
+            'nis' => 'required|string|max:20|unique:users,nis',
+            'fullname' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+            'kelas' => 'required|string|max:50',
+            'alamat' => 'required|string',
+        ]);
 
-        if (!in_array($userRole, $allowedRoles)) {
-            abort(403, 'Unauthorized access.');
-        }
+        try {
+            $user = User::create([
+                'kode_user' => 'AGT' . Str::random(3) . time(),
+                'nis' => $request->nis,
+                'fullname' => $request->fullname,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'kelas' => $request->kelas,
+                'alamat' => $request->alamat,
+                'role' => 'anggota',
+                'verif' => 'Belum Terverifikasi',
+                'join_date' => now(),
+            ]);
 
-        return $next($request);
+            Auth::login($user);
+
+            return redirect('/user/dashboard')->with('success', 'Registrasi berhasil! Menunggu verifikasi admin.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.')->withInput();
+        }
     }
 }

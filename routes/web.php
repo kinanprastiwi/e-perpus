@@ -1,7 +1,14 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AnggotaController;
+use App\Http\Controllers\Admin\BukuController;
+use App\Http\Controllers\Admin\KategoriController;
+use App\Http\Controllers\Admin\PenerbitController;
+use App\Http\Controllers\Admin\PeminjamanController;
 
 // Debug routes
 Route::get('/debug-role', function () {
@@ -28,8 +35,21 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Route register
-Route::get('/register', [LoginController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [LoginController::class, 'register']);
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
+
+// Debug route
+Route::get('/debug-session', function() {
+    echo "Session ID: " . session()->getId() . "<br>";
+    echo "Auth check: " . (auth()->check() ? 'YES' : 'NO') . "<br>";
+    if (auth()->check()) {
+        echo "User: " . auth()->user()->username . "<br>";
+        echo "Role: " . auth()->user()->role . "<br>";
+    }
+    echo "<pre>";
+    print_r(session()->all());
+    echo "</pre>";
+});
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {
@@ -49,30 +69,31 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ✅ ADMIN ROUTES
-    Route::middleware(['role:admin,petugas'])->group(function () {
-        Route::get('/admin/dashboard', function () {
-            // Ambil data stats
-            $stats = [
-                'anggota_count' => \App\Models\User::where('role', 'anggota')->count(),
-                'buku_count' => \App\Models\Buku::count(),
-                'kategori_count' => \App\Models\Kategori::count(),
-                'penerbit_count' => \App\Models\Penerbit::count(),
-                'peminjaman_aktif_count' => \App\Models\Peminjaman::where('status', 'Dipinjam')->count(),
-                'pengembalian_count' => \App\Models\Peminjaman::where('status', 'Dikembalikan')->count(),
-            ];
-
-            // Ambil data peminjaman terbaru
-            $recentLoans = \App\Models\Peminjaman::with(['user', 'buku'])
-                ->orderBy('created_at', 'desc')
-                ->take(5)
-                ->get();
-
-            return view('admin.dashboard', compact('stats', 'recentLoans'));
-        })->name('admin.dashboard');
+    Route::prefix('admin')->name('admin.')->middleware(['role:admin,petugas'])->group(function () {
         
-        // Tambahkan routes admin lainnya di sini nanti
-        // Route::get('/admin/anggota', ...);
-        // Route::get('/admin/buku', ...);
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/chart-data', [DashboardController::class, 'getChartData'])->name('chart.data');
+        
+        // Anggota routes
+        Route::get('/anggota/export', [AnggotaController::class, 'export'])->name('anggota.export');
+        Route::resource('/anggota', AnggotaController::class);
+        
+        // Buku routes - DIPERBAIKI: Pastikan urutan route khusus sebelum resource
+        Route::get('/buku/export', [BukuController::class, 'export'])->name('buku.export');
+        Route::post('/buku/{buku}/stock', [BukuController::class, 'updateStock'])->name('buku.stock.update');
+        Route::resource('/buku', BukuController::class);
+        
+        // Kategori routes
+        Route::resource('/kategori', KategoriController::class);
+        
+        // Penerbit routes
+        Route::resource('/penerbit', PenerbitController::class);
+        
+        // Peminjaman routes
+        Route::resource('/peminjaman', PeminjamanController::class);
+        Route::post('/peminjaman/{peminjaman}/return', [PeminjamanController::class, 'returnBook'])
+             ->name('peminjaman.return');
     });
 
     // ✅ USER ROUTES  

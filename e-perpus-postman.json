@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "E-Perpus API Testing",
+    "description": "Collection untuk testing API E-Perpus - Sistem Manajemen Perpustakaan",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "sessionCookie",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "csrfToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Debug Role Middleware",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/debug-role",
+          "host": ["{{baseUrl}}"],
+          "path": ["debug-role"]
+        }
+      }
+    },
+    {
+      "name": "2. Get CSRF Token",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Extract CSRF token from HTML response",
+              "var html = pm.response.text();",
+              "var regex = /<meta name=\"csrf-token\" content=\"([^\"]*)\">/;",
+              "var match = html.match(regex);",
+              "if (match && match[1]) {",
+              "    pm.collectionVariables.set('csrfToken', match[1]);",
+              "    console.log('CSRF Token:', match[1]);",
+              "} else {",
+              "    console.log('CSRF Token not found');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Login - Admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrfToken}}"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "admin"
+            },
+            {
+              "key": "password",
+              "value": "password123"
+            },
+            {
+              "key": "_token",
+              "value": "{{csrfToken}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Simpan session cookie jika login berhasil",
+              "if (pm.response.code === 302) {",
+              "    var cookie = pm.cookies.get('laravel_session');",
+              "    if (cookie) {",
+              "        pm.collectionVariables.set('sessionCookie', cookie);",
+              "        console.log('Session cookie saved:', cookie);",
+              "    }",
+              "    pm.test('Login successful', function () {",
+              "        pm.expect(pm.response.code).to.equal(302);",
+              "    });",
+              "} else {",
+              "    pm.test('Login failed', function () {",
+              "        pm.expect.fail('Expected 302 redirect but got ' + pm.response.code);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Test Simple Auth",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "laravel_session={{sessionCookie}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/test-simple",
+          "host": ["{{baseUrl}}"],
+          "path": ["test-simple"]
+        }
+      }
+    },
+    {
+      "name": "5. Admin Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "laravel_session={{sessionCookie}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/dashboard",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "dashboard"]
+        }
+      }
+    },
+    {
+      "name": "6. Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Cookie",
+            "value": "laravel_session={{sessionCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrfToken}}"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "_token",
+              "value": "{{csrfToken}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/logout",
+          "host": ["{{baseUrl}}"],
+          "path": ["logout"]
+        }
+      }
+    }
+  ]
+}

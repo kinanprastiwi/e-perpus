@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,7 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Manual register middleware
         $this->app['router']->aliasMiddleware('role', \App\Http\Middleware\CheckRole::class);
-        
+
+        Blade::component('card', \App\View\Components\Card::class);
         // Tambahan konfigurasi lainnya jika perlu
     }
 }
