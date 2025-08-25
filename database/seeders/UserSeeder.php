@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     {
         $now = Carbon::now();
         
-        DB::table('users')->insert([
+        $users = [
             [
                 'kode_user' => 'ADM001',
                 'nis' => null,
@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
                 'alamat' => 'Jl. Administrasi No. 1',
                 'verif' => 'Terverifikasi',
                 'role' => 'admin',
-                'join_date' => $now->toDateString(), // Tambahkan ini
+                'join_date' => $now->toDateString(),
                 'terakhir_login' => null,
                 'created_at' => $now,
                 'updated_at' => $now
@@ -42,7 +42,7 @@ class UserSeeder extends Seeder
                 'alamat' => 'Jl. Petugas No. 1',
                 'verif' => 'Terverifikasi',
                 'role' => 'petugas',
-                'join_date' => $now->toDateString(), // Tambahkan ini
+                'join_date' => $now->toDateString(),
                 'terakhir_login' => null,
                 'created_at' => $now,
                 'updated_at' => $now
@@ -58,27 +58,20 @@ class UserSeeder extends Seeder
                 'alamat' => 'Jl. Anggota No. 1',
                 'verif' => 'Terverifikasi',
                 'role' => 'anggota',
-                'join_date' => $now->toDateString(), // Tambahkan ini
+                'join_date' => $now->toDateString(),
                 'terakhir_login' => null,
                 'created_at' => $now,
                 'updated_at' => $now
-            ],
-            [
-    'kode_user' => 'ADM001',
-    'nis' => null,
-    'fullname' => 'Administrator Utama',
-    'username' => 'admin',
-    'email' => 'admin@perpustakaan.com',
-    'password' => Hash::make('password123'),
-    'kelas' => null,
-    'alamat' => 'Jl. Administrasi No. 1',
-    'verif' => 'Terverifikasi',
-    'role' => 'admin',
-    'join_date' => '2024-01-01', // Tanggal spesifik
-    'terakhir_login' => null,
-    'created_at' => $now,
-    'updated_at' => $now
-]
-        ]);
+            ]
+        ];
+
+        foreach ($users as $user) {
+            DB::table('users')->updateOrInsert(
+                ['username' => $user['username']],
+                $user
+            );
+        }
+        
+        echo "Seeder berhasil dijalankan. 3 user di-update/ditambahkan.\n";
     }
 }

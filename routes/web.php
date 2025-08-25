@@ -1,14 +1,17 @@
 <?php
 
-use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\AnggotaController;
 use App\Http\Controllers\Admin\BukuController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\AnggotaController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\PenerbitController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PeminjamanController;
+use App\Http\Controllers\User\PeminjamanController as UserPeminjamanController;
+use App\Http\Controllers\User\BukuController as UserBukuController;
 
 // Debug routes
 Route::get('/debug-role', function () {
@@ -77,9 +80,10 @@ Route::middleware(['auth'])->group(function () {
         
         // Anggota routes
         Route::get('/anggota/export', [AnggotaController::class, 'export'])->name('anggota.export');
+        Route::post('/anggota/{anggota}/toggle-status', [AnggotaController::class, 'toggleStatus'])->name('anggota.toggleStatus');
         Route::resource('/anggota', AnggotaController::class);
         
-        // Buku routes - DIPERBAIKI: Pastikan urutan route khusus sebelum resource
+        // Buku routes
         Route::get('/buku/export', [BukuController::class, 'export'])->name('buku.export');
         Route::post('/buku/{buku}/stock', [BukuController::class, 'updateStock'])->name('buku.stock.update');
         Route::resource('/buku', BukuController::class);
@@ -90,32 +94,22 @@ Route::middleware(['auth'])->group(function () {
         // Penerbit routes
         Route::resource('/penerbit', PenerbitController::class);
         
-        // Peminjaman routes
-        Route::resource('/peminjaman', PeminjamanController::class);
-        Route::post('/peminjaman/{peminjaman}/return', [PeminjamanController::class, 'returnBook'])
+        // ✅ PEMINJAMAN ROUTES
+        Route::resource('peminjaman', PeminjamanController::class);
+        Route::post('peminjaman/{peminjaman}/return', [PeminjamanController::class, 'returnBook'])
              ->name('peminjaman.return');
+        Route::post('peminjaman/{peminjaman}/extend', [PeminjamanController::class, 'extendDueDate'])
+             ->name('peminjaman.extend');
     });
 
-    // ✅ USER ROUTES  
-    Route::middleware(['role:anggota'])->group(function () {
-        Route::get('/user/dashboard', function () {
-            return view('user.dashboard');
-        })->name('user.dashboard');
-        
-        Route::get('/user/peminjaman', function () {
-            return view('user.peminjaman');
-        })->name('user.peminjaman');
-        
-        Route::get('/user/pengembalian', function () {
-            return view('user.pengembalian');
-        })->name('user.pengembalian');
-        
-        Route::get('/user/buku', function () {
-            return view('user.buku');
-        })->name('user.buku');
-        
-        Route::get('/user/profil', function () {
-            return view('user.profil');
-        })->name('user.profil');
+    // ✅ USER ROUTES - FIXED
+    Route::prefix('user')->name('user.')->middleware(['role:anggota'])->group(function () {
+        Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+        Route::get('/peminjaman', [UserPeminjamanController::class, 'index'])->name('peminjaman.index');
+        Route::get('/peminjaman/{id}', [UserPeminjamanController::class, 'show'])->name('peminjaman.show');
+        Route::get('/buku', [UserBukuController::class, 'index'])->name('buku.index');
+        Route::get('/buku/{id}', [UserBukuController::class, 'show'])->name('buku.show');
+        Route::get('/profil', [UserController::class, 'profil'])->name('profil');
+        Route::put('/profil', [UserController::class, 'updateProfil'])->name('profil.update');
     });
 });

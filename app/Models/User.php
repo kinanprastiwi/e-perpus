@@ -12,17 +12,36 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'users';
-    
-    protected $primaryKey = 'kode_user';
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $guarded = [];
+    protected $primaryKey = 'id_user';
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    protected $fillable = [
+        'kode_user',
+        'nis',
+        'fullname',
+        'username',
+        'password',
+        'kelas',
+        'alamat',
+        'verif',
+        'role',
+        'join_date',
+        'terakhir_login'
+    ];
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
-    // Method untuk authentication dengan username
+    // Relasi dengan peminjaman
+    public function peminjaman()
+    {
+        return $this->hasMany(Peminjaman::class, 'id_user');
+    }
+
+    // Method untuk authentication
     public function findForPassport($username)
     {
         return $this->where('username', $username)->first();
