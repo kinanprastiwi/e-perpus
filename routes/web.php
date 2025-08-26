@@ -102,14 +102,22 @@ Route::middleware(['auth'])->group(function () {
              ->name('peminjaman.extend');
     });
 
-    // ✅ USER ROUTES - FIXED
-    Route::prefix('user')->name('user.')->middleware(['role:anggota'])->group(function () {
-        Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-        Route::get('/peminjaman', [UserPeminjamanController::class, 'index'])->name('peminjaman.index');
-        Route::get('/peminjaman/{id}', [UserPeminjamanController::class, 'show'])->name('peminjaman.show');
-        Route::get('/buku', [UserBukuController::class, 'index'])->name('buku.index');
-        Route::get('/buku/{id}', [UserBukuController::class, 'show'])->name('buku.show');
-        Route::get('/profil', [UserController::class, 'profil'])->name('profil');
-        Route::put('/profil', [UserController::class, 'updateProfil'])->name('profil.update');
-    });
+  // ✅ USER ROUTES - FIXED
+Route::prefix('user')->name('user.')->middleware(['role:anggota'])->group(function () {
+    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+    
+    // ROUTE BUKU
+    Route::get('/buku', [UserBukuController::class, 'index'])->name('buku.index');
+    Route::get('/buku/{id}', [UserBukuController::class, 'show'])->name('buku.show');
+    
+    // ROUTE PEMINJAMAN - PASTIKAN NAME BENAR
+    Route::post('/buku/{id}/pinjam', [UserPeminjamanController::class, 'pinjam'])
+        ->name('buku.pinjam'); // user.buku.pinjam
+    
+    Route::get('/peminjaman', [UserPeminjamanController::class, 'index'])->name('peminjaman.index');
+    Route::get('/peminjaman/{id}', [UserPeminjamanController::class, 'show'])->name('peminjaman.show');
+    
+    Route::get('/profil', [UserController::class, 'profil'])->name('profil');
+    Route::put('/profil', [UserController::class, 'updateProfil'])->name('profil.update');
+});
 });

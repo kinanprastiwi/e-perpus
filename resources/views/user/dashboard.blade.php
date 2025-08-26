@@ -67,19 +67,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($peminjaman_aktif_list as $peminjaman)
-                                <tr>
-                                    <td>{{ $peminjaman->buku->judul }}</td>
-                                    <td>{{ $peminjaman->tgl_pinjam->format('d M Y') }}</td>
-                                    <td>{{ $peminjaman->tgl_jatuh_tempo->format('d M Y') }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $peminjaman->status == 'Dipinjam' ? 'warning' : 'success' }}">
-                                            {{ $peminjaman->status }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
+    @foreach($peminjaman_aktif_list as $peminjaman)
+    <tr>
+        <td>{{ $peminjaman->buku->judul_buku ?? 'Buku tidak ditemukan' }}</td>
+        <td>{{ $peminjaman->tanggal_peminjaman->format('d M Y') }}</td> <!-- PERBAIKAN -->
+        <td>{{ $peminjaman->tanggal_harus_kembali->format('d M Y') }}</td> <!-- PERBAIKAN -->
+        <td>
+            <span class="badge bg-{{ $peminjaman->status == 'Dipinjam' ? 'warning' : ($peminjaman->status == 'Dikembalikan' ? 'success' : 'danger') }}">
+                {{ $peminjaman->status }}
+            </span>
+        </td>
+    </tr>
+    @endforeach
+</tbody>
                         </table>
                     </div>
                 @else

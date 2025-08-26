@@ -9,37 +9,39 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function dashboard()
-    {
-        $user = auth()->user();
+public function dashboard()
+{
+    $user = auth()->user();
+    
+    $peminjaman_aktif = Peminjaman::where('id_user', $user->id_user)
+        ->where('status', 'Dipinjam')
+        ->count();
         
-        $peminjaman_aktif = Peminjaman::where('id_user', $user->id_user)
-            ->where('status', 'Dipinjam')
-            ->count();
-            
-        $total_peminjaman = Peminjaman::where('id_user', $user->id_user)->count();
-        $buku_dikembalikan = Peminjaman::where('id_user', $user->id_user)
-            ->where('status', 'Dikembalikan')
-            ->count();
-            
-        $buku_tersedia = Buku::where('stok', '>', 0)->count();
+    $total_peminjaman = Peminjaman::where('id_user', $user->id_user)->count();
+    $buku_dikembalikan = Peminjaman::where('id_user', $user->id_user)
+        ->where('status', 'Dikembalikan')
+        ->count();
         
-        $peminjaman_aktif_list = Peminjaman::with('buku')
-            ->where('id_user', $user->id_user)
-            ->where('status', 'Dipinjam')
-            ->orderBy('tgl_pinjam', 'desc')
-            ->limit(5)
-            ->get();
+    $buku_tersedia = Buku::where('j_buku_baik', '>', 0)->count();
+    
+    // PASTIKAN eager loading untuk buku
+    $peminjaman_aktif_list = Peminjaman::with(['buku' => function($query) {
+            $query->select('id_buku', 'judul_buku'); // HANYA AMBIL KOLOM YANG DIBUTUHKAN
+        }])
+        ->where('id_user', $user->id_user)
+        ->where('status', 'Dipinjam')
+        ->orderBy('tanggal_peminjaman', 'desc')
+        ->limit(5)
+        ->get();
 
-        return view('user.dashboard', compact(
-            'peminjaman_aktif',
-            'total_peminjaman',
-            'buku_dikembalikan',
-            'buku_tersedia',
-            'peminjaman_aktif_list'
-        ));
-    }
-
+    return view('user.dashboard', compact(
+        'peminjaman_aktif',
+        'total_peminjaman',
+        'buku_dikembalikan',
+        'buku_tersedia',
+        'peminjaman_aktif_list'
+    ));
+}
     public function profil()
     {
         $user = auth()->user();
